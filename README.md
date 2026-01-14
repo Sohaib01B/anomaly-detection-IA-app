@@ -1,4 +1,4 @@
-<img width="1920" height="1031" alt="Capture d’écran 2026-01-14 145324" src="https://github.com/user-attachments/assets/8692ba36-2091-4ce4-b3c6-f7b5a970e7c1" />﻿# anomaly-detection-IA-app
+﻿# anomaly-detection-IA-app
 
 ### demo
 
@@ -50,4 +50,5 @@ Ce projet détecte automatiquement des comportements anormaux dans des vidéos d
 - Détection d'anomalies majeures: ✅ Bon
 - Faux positifs: Modéré
 - Temps d'inférence: ~2-5 min pour 200 frames
+
 
