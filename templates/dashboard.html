@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Système de Détection d'Anomalies</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #f8f9ff;
+            color: #667eea;
+        }
+
+        .nav-links a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .activity-item {
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .activity-item.anomaly {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .activity-time {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .activity-content {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Tableau de Bord</h1>
+            <p>Vue d'ensemble de vos analyses</p>
+        </header>
+
+        <!-- Navigation -->
+        <div class="navbar">
+            <div class="nav-links">
+                <a href="/">🏠 Accueil</a>
+                <a href="/dashboard" class="active">📊 Dashboard</a>
+                <a href="/history">📜 Historique</a>
+                <a href="/settings">⚙️ Paramètres</a>
+                <a href="/about">ℹ️ À propos</a>
+            </div>
+        </div>
+
+        <!-- Statistiques principales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon">📹</div>
+                </div>
+                <div class="stat-value" id="totalAnalyses">0</div>
+                <div class="stat-label">Analyses totales</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon">🚨</div>
+                </div>
+                <div class="stat-value" id="totalAnomalies">0</div>
+                <div class="stat-label">Anomalies détectées</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon">📈</div>
+                </div>
+                <div class="stat-value" id="recentAnalyses">0</div>
+                <div class="stat-label">Analyses (7 derniers jours)</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon">⚡</div>
+                </div>
+                <div class="stat-value" id="detectionRate">0%</div>
+                <div class="stat-label">Taux de détection</div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="chart-container">
+                <h2 class="section-title">📊 Types d'anomalies</h2>
+                <canvas id="anomalyTypesChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2 class="section-title">📈 Évolution des détections</h2>
+                <canvas id="evolutionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="recent-activity">
+            <h2 class="section-title">🕐 Activité récente</h2>
+            <div id="recentActivity">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let anomalyTypesChart = null;
+    let evolutionChart = null;
+
+    // ===== DONNÉES STATIQUES (FAKE) =====
+    const data = {
+        total_analyses: 128,
+        total_anomalies: 23,
+        recent_analyses: 17,
+        anomaly_types: {
+            "Intrusion": 8,
+            "Chute": 5,
+            "Course anormale": 4,
+            "Agression": 3,
+            "Rassemblement suspect": 3
+        },
+        reports: [
+            {
+                timestamp: "2026-01-10T14:32:00",
+                video: "video_01.mp4",
+                anomalies_count: 2
+            },
+            {
+                timestamp: "2026-01-11T09:15:00",
+                video: "video_02.mp4",
+                anomalies_count: 0
+            },
+            {
+                timestamp: "2026-01-11T18:40:00",
+                video: "video_03.mp4",
+                anomalies_count: 3
+            },
+            {
+                timestamp: "2026-01-12T11:05:00",
+                video: "video_04.mp4",
+                anomalies_count: 1
+            },
+            {
+                timestamp: "2026-01-13T16:20:00",
+                video: "video_05.mp4",
+                anomalies_count: 4
+            }
+        ]
+    };
+
+    function loadDashboardData() {
+        // Statistiques
+        document.getElementById('totalAnalyses').textContent = data.total_analyses;
+        document.getElementById('totalAnomalies').textContent = data.total_anomalies;
+        document.getElementById('recentAnalyses').textContent = data.recent_analyses;
+
+        const detectionRate = ((data.total_anomalies / data.total_analyses) * 100).toFixed(1);
+        document.getElementById('detectionRate').textContent = detectionRate + '%';
+
+        createAnomalyTypesChart(data.anomaly_types);
+        createEvolutionChart(data.reports);
+        displayRecentActivity(data.reports);
+    }
+
+    function createAnomalyTypesChart(anomalyTypes) {
+        const ctx = document.getElementById('anomalyTypesChart');
+
+        if (anomalyTypesChart) anomalyTypesChart.destroy();
+
+        anomalyTypesChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(anomalyTypes),
+                datasets: [{
+                    data: Object.values(anomalyTypes),
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(249, 115, 22, 0.8)',
+                        'rgba(234, 179, 8, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    function createEvolutionChart(reports) {
+        const ctx = document.getElementById('evolutionChart');
+
+        if (evolutionChart) evolutionChart.destroy();
+
+        evolutionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: reports.map((_, i) => `Analyse ${i + 1}`),
+                datasets: [{
+                    label: "Anomalies détectées",
+                    data: reports.map(r => r.anomalies_count),
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    function displayRecentActivity(reports) {
+        const container = document.getElementById('recentActivity');
+
+        container.innerHTML = reports.slice().reverse().map(r => `
+            <div class="activity-item ${r.anomalies_count > 0 ? 'anomaly' : ''}">
+                <div class="activity-time">
+                    ${new Date(r.timestamp).toLocaleString('fr-FR')}
+                </div>
+                <div class="activity-content">
+                    ${r.anomalies_count > 0 ? '🚨' : '✅'}
+                    Vidéo : ${r.video} — ${r.anomalies_count} anomalie(s)
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Chargement immédiat (PAS de refresh auto)
+    loadDashboardData();
+</script>
+
+</body>
+</html>

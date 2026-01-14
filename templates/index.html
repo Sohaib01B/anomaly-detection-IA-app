@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Détection d'Anomalies - Surveillance Vidéo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            gap: 20px;
+            animation: fadeIn 1s ease;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Tabs pour mode Video/Webcam */
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: #f8f9ff;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .mode-content {
+            display: none;
+        }
+
+        .mode-content.active {
+            display: block;
+        }
+
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            background: #f8f9ff;
+        }
+
+        .upload-zone:hover {
+            border-color: #764ba2;
+            background: #eef0ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #videoStream {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+            padding: 50px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.inactive {
+            background: #ef4444;
+            animation: none;
+        }
+
+        /* Panel des anomalies */
+        .anomalies-panel {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .anomaly-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .anomaly-item {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #ef4444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .anomaly-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .anomaly-item.critical {
+            border-left-color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .anomaly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .anomaly-class {
+            font-weight: 700;
+            color: #dc2626;
+            font-size: 1.1em;
+        }
+
+        .anomaly-confidence {
+            background: #dc2626;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .anomaly-info {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .anomaly-thumbnail {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎥 Système de Détection d'Anomalies</h1>
+            <p>Surveillance vidéo intelligente en temps réel avec webcam</p>
+        </header>
+        
+
+        <div class="main-content">
+            <!-- Panneau de contrôle -->
+            <div class="panel">
+                <h2 class="section-title">⚙️ Contrôles</h2>
+
+                <div id="alertBox" class="alert"></div>
+
+                <!-- Tabs Mode Video / Webcam -->
+                <div class="mode-tabs">
+                    <div class="tab active" data-mode="video">📹 Vidéo</div>
+                    <div class="tab" data-mode="webcam">📷 Webcam</div>
+                </div>
+
+                <!-- Mode Vidéo -->
+                <div class="mode-content active" id="videoMode">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">📹</div>
+                        <p><strong>Cliquez ou glissez une vidéo</strong></p>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                            Formats: MP4, AVI, MOV, MKV
+                        </p>
+                        <input type="file" id="fileInput" accept="video/*">
+                    </div>
+
+                    <div id="fileInfo" class="file-info" style="display:none; background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p><strong>Fichier:</strong> <span id="fileName">-</span></p>
+                        <p><strong>Taille:</strong> <span id="fileSize">-</span></p>
+                    </div>
+
+                    <div style="margin: 20px 0;">
+                        <label style="display: flex; align-items: center; padding: 12px; background: #f8f9ff; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">
+                            <input type="checkbox" id="thermalMode" style="width: 20px; height: 20px; margin-right: 10px;">
+                            <span>
+                                <strong>Mode thermique</strong><br>
+                                <small>Effet visuel lors d'anomalies</small>
+                            </span>
+                        </label>
+
+                        <label style="display: block; margin-bottom: 10px;">
+                            <span>
+                                <strong>Saut de frames: <span id="skipValue">5</span></strong><br>
+                                <small>Plus élevé = traitement plus rapide</small>
+                            </span>
+                        </label>
+                        <input type="range" id="frameSkip" min="1" max="15" value="5" style="width: 100%; margin-bottom: 15px;">
+                    </div>
+
+                    <button class="btn btn-primary" id="startBtn" disabled>
+                        🚀 Démarrer l'analyse
+                    </button>
+
+                    <button class="btn btn-secondary" id="stopBtn" disabled>
+                        ⏸️ Arrêter
+                    </button>
+                </div>
+
+                <!-- Mode Webcam -->
+                <div class="mode-content" id="webcamMode">
+                    <div style="text-align: center; padding: 30px; background: #f8f9ff; border-radius: 10px; margin-bottom: 20px;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">📷</div>
+                        <p><strong>Détection en temps réel</strong></p>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                            Utilisez votre webcam pour la surveillance
+                        </p>
+                    </div>
+
+                    <button class="btn btn-primary" id="startWebcamBtn">
+                        📷 Démarrer la webcam
+                    </button>
+
+                    <button class="btn btn-danger" id="stopWebcamBtn" disabled>
+                        ⏹️ Arrêter la webcam
+                    </button>
+                </div>
+
+                <div class="loader" id="loader"></div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="anomalyCount">0</div>
+                        <div class="stat-label">Anomalies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="frameCount">0</div>
+                        <div class="stat-label">Frames</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="confidence">0%</div>
+                        <div class="stat-label">Confiance</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone d'affichage vidéo -->
+            <div class="panel">
+                <h2 class="section-title">🎬 Flux vidéo en direct</h2>
+
+                <div class="video-container">
+                    <div class="placeholder" id="placeholder">
+                        <div style="font-size: 5em; margin-bottom: 20px; opacity: 0.3;">🎥</div>
+                        <h3>Aucune vidéo en cours d'analyse</h3>
+                        <p>Uploadez une vidéo ou démarrez la webcam</p>
+                    </div>
+                    <img id="videoStream" alt="Video Stream">
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-indicator">
+                        <div class="status-dot inactive" id="statusDot"></div>
+                        <span id="statusText">En attente...</span>
+                    </div>
+                    <div>
+                        <strong>Modèle:</strong> <span id="modelStatus">Chargé ✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel des anomalies détectées -->
+            <div class="panel anomalies-panel">
+                <h2 class="section-title">
+                    🚨 Anomalies détectées
+                    <span id="anomalyBadge" style="background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-left: auto;">0</span>
+                </h2>
+
+                <div id="anomalyList" class="anomaly-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p><strong>Aucune anomalie détectée</strong></p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">Les anomalies apparaîtront ici</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+        let isProcessing = false;
+        let currentMode = 'video';
+        let anomalyUpdateInterval = null;
+
+        // Éléments DOM
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const startWebcamBtn = document.getElementById('startWebcamBtn');
+        const stopWebcamBtn = document.getElementById('stopWebcamBtn');
+        const videoStream = document.getElementById('videoStream');
+        const placeholder = document.getElementById('placeholder');
+        const alertBox = document.getElementById('alertBox');
+        const loader = document.getElementById('loader');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const anomalyList = document.getElementById('anomalyList');
+        const anomalyBadge = document.getElementById('anomalyBadge');
+        const anomalyCount = document.getElementById('anomalyCount');
+
+        // Gestion des tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const mode = tab.dataset.mode;
+                switchMode(mode);
+            });
+        });
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${mode}Mode`).classList.add('active');
+            
+            // Stop any active stream
+            stopAnalysis();
+            stopWebcam();
+        }
+
+        // Gestion du drag & drop
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#764ba2';
+            uploadZone.style.background = '#e0e7ff';
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.borderColor = '#667eea';
+            uploadZone.style.background = '#f8f9ff';
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#667eea';
+            uploadZone.style.background = '#f8f9ff';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        document.getElementById('frameSkip').addEventListener('input', (e) => {
+            document.getElementById('skipValue').textContent = e.target.value;
+        });
+
+        function handleFileSelect(file) {
+            const validTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska'];
+            
+            if (!validTypes.includes(file.type)) {
+                showAlert('Format de fichier non supporté', 'error');
+                return;
+            }
+
+            uploadedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            document.getElementById('fileInfo').style.display = 'block';
+            
+            uploadFile(file);
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('video', file);
+
+            loader.classList.add('active');
+            startBtn.disabled = true;
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('✓ Vidéo uploadée avec succès!', 'success');
+                    uploadedFile = data.filename;
+                    startBtn.disabled = false;
+                } else {
+                    showAlert('❌ ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Erreur lors de l\'upload: ' + error.message, 'error');
+            } finally {
+                loader.classList.remove('active');
+            }
+        }
+
+        startBtn.addEventListener('click', startAnalysis);
+        stopBtn.addEventListener('click', stopAnalysis);
+
+        function startAnalysis() {
+            if (!uploadedFile) {
+                showAlert('Veuillez d\'abord uploader une vidéo', 'error');
+                return;
+            }
+
+            isProcessing = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            const thermal = document.getElementById('thermalMode').checked ? 'true' : 'false';
+            const skip = document.getElementById('frameSkip').value;
+            
+            videoStream.src = `/video_feed/${uploadedFile}?thermal=${thermal}&skip=${skip}`;
+            videoStream.style.display = 'block';
+            placeholder.style.display = 'none';
+
+            statusDot.classList.remove('inactive');
+            statusText.textContent = 'Analyse en cours...';
+
+            showAlert('🚀 Analyse démarrée', 'success');
+            startAnomalyUpdates();
+        }
+
+        function stopAnalysis() {
+            isProcessing = false;
+            videoStream.src = '';
+            videoStream.style.display = 'none';
+            placeholder.style.display = 'block';
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+
+            statusDot.classList.add('inactive');
+            statusText.textContent = 'Analyse arrêtée';
+
+            stopAnomalyUpdates();
+        }
+
+        // Webcam functions
+        startWebcamBtn.addEventListener('click', startWebcam);
+        stopWebcamBtn.addEventListener('click', stopWebcam);
+
+        async function startWebcam() {
+            try {
+                const response = await fetch('/start_webcam', {method: 'POST'});
+                const data = await response.json();
+                
+                if (data.success) {
+                    videoStream.src = '/webcam_feed';
+                    videoStream.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    
+                    startWebcamBtn.disabled = true;
+                    stopWebcamBtn.disabled = false;
+                    
+                    statusDot.classList.remove('inactive');
+                    statusText.textContent = 'Webcam active';
+                    
+                    showAlert('📷 Webcam démarrée', 'success');
+                    startAnomalyUpdates();
+                }
+            } catch (error) {
+                showAlert('❌ Erreur webcam: ' + error.message, 'error');
+            }
+        }
+
+        async function stopWebcam() {
+            try {
+                const response = await fetch('/stop_webcam', {method: 'POST'});
+                
+                videoStream.src = '';
+                videoStream.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                startWebcamBtn.disabled = false;
+                stopWebcamBtn.disabled = true;
+                
+                statusDot.classList.add('inactive');
+                statusText.textContent = 'Webcam arrêtée';
+                
+                stopAnomalyUpdates();
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Mise à jour des anomalies
+        function startAnomalyUpdates() {
+            stopAnomalyUpdates();
+            updateAnomalies();
+            anomalyUpdateInterval = setInterval(updateAnomalies, 2000);
+        }
+
+        function stopAnomalyUpdates() {
+            if (anomalyUpdateInterval) {
+                clearInterval(anomalyUpdateInterval);
+                anomalyUpdateInterval = null;
+            }
+        }
+
+        async function updateAnomalies() {
+            try {
+                const response = await fetch('/anomalies');
+                const data = await response.json();
+                
+                displayAnomalies(data.anomalies);
+                anomalyCount.textContent = data.count;
+                anomalyBadge.textContent = data.count;
+            } catch (error) {
+                console.error('Erreur mise à jour anomalies:', error);
+            }
+        }
+
+        function displayAnomalies(anomalies) {
+            if (anomalies.length === 0) {
+                anomalyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p><strong>Aucune anomalie détectée</strong></p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">Les anomalies apparaîtront ici</p>
+                    </div>
+                `;
+                return;
+            }
+
+            anomalyList.innerHTML = anomalies.reverse().map(anomaly => {
+                const isCritical = anomaly.confidence > 0.8;
+                const timeDisplay = anomaly.time_str || anomaly.time;
+                
+                return `
+                    <div class="anomaly-item ${isCritical ? 'critical' : ''}">
+                        <div class="anomaly-header">
+                            <div class="anomaly-class">⚠️ ${anomaly.class}</div>
+                            <div class="anomaly-confidence">${(anomaly.confidence * 100).toFixed(0)}%</div>
+                        </div>
+                        <div class="anomaly-info">
+                            <span>⏱️ ${timeDisplay}</span>
+                            <span>🎞️ Frame ${anomaly.frame}</span>
+                        </div>
+                        ${anomaly.thumbnail ? `
+                            <img src="/thumbnail/${anomaly.thumbnail}" 
+                                 class="anomaly-thumbnail" 
+                                 alt="Anomalie détectée">
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                if (!data.model_loaded) {
+                    showAlert('⚠️ Modèle non chargé', 'error');
+                    document.getElementById('modelStatus').textContent = 'Erreur ❌';
+                }
+            } catch (error) {
+                console.error('Erreur de statut:', error);
+            }
+        }
+
+        // Initialisation
+        checkStatus();
+    </script>
+</body>
+</html>

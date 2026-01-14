@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - Système de Détection d'Anomalies</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover { background: #f8f9ff; color: #667eea; }
+        .nav-links a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.8s ease;
+        }
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .setting-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+        .setting-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .setting-description {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .setting-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        .setting-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #667eea;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        .alert.success { background: #d1fae5; color: #065f46; }
+        .alert.show { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Paramètres</h1>
+            <p>Configurez votre système de détection</p>
+        </header>
+
+        <div class="navbar">
+            <div class="nav-links">
+                <a href="/">🏠 Accueil</a>
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/history">📜 Historique</a>
+                <a href="/settings" class="active">⚙️ Paramètres</a>
+                <a href="/about">ℹ️ À propos</a>
+            </div>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <div class="settings-grid">
+            <!-- Paramètres de Détection -->
+            <div class="panel">
+                <h2 class="section-title">🎯 Détection</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Seuil de confiance</label>
+                    <div class="setting-description">
+                        Niveau minimum de confiance pour détecter une anomalie (actuellement: 60%)
+                    </div>
+                    <input type="range" class="setting-input" id="confidenceThreshold" 
+                           min="40" max="90" value="60" 
+                           oninput="document.getElementById('confidenceValue').textContent = this.value + '%'">
+                    <div style="text-align: center; margin-top: 10px; font-weight: 600; color: #667eea;">
+                        <span id="confidenceValue">60%</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Saut de frames par défaut</label>
+                    <div class="setting-description">
+                        Nombre de frames à sauter pour accélérer le traitement
+                    </div>
+                    <input type="number" class="setting-input" id="defaultFrameSkip" 
+                           min="1" max="20" value="5">
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Mode thermique automatique</label>
+                    <div class="setting-description">
+                        Activer l'effet thermique automatiquement lors des anomalies
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoThermalMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Paramètres d'Affichage -->
+            <div class="panel">
+                <h2 class="section-title">🎨 Affichage</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Afficher les boîtes de détection</label>
+                    <div class="setting-description">
+                        Dessiner des rectangles autour des zones d'anomalies
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showBoundingBoxes" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Notifications sonores</label>
+                    <div class="setting-description">
+                        Émettre un son lors de la détection d'anomalies critiques
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundNotifications">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Qualité du flux vidéo</label>
+                    <div class="setting-description">
+                        Qualité JPEG du flux (plus élevé = meilleure qualité mais plus lent)
+                    </div>
+                    <select class="setting-input" id="videoQuality">
+                        <option value="70">Basse (70%)</option>
+                        <option value="85" selected>Moyenne (85%)</option>
+                        <option value="95">Haute (95%)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stockage -->
+            <div class="panel">
+                <h2 class="section-title">💾 Stockage</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Sauvegarder les miniatures</label>
+                    <div class="setting-description">
+                        Enregistrer des captures d'écran des frames avec anomalies
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="saveThumbnails" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Durée de conservation</label>
+                    <div class="setting-description">
+                        Nombre de jours avant suppression automatique des anciens rapports
+                    </div>
+                    <select class="setting-input" id="retentionDays">
+                        <option value="7">7 jours</option>
+                        <option value="30" selected>30 jours</option>
+                        <option value="90">90 jours</option>
+                        <option value="365">1 an</option>
+                        <option value="-1">Jamais</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Espace utilisé</label>
+                    <div class="setting-description">
+                        Espace disque utilisé par les vidéos et rapports
+                    </div>
+                    <div style="margin-top: 10px; padding: 15px; background: white; border-radius: 6px; text-align: center;">
+                        <strong style="font-size: 1.5em; color: #667eea;">~0 MB</strong>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 5px;">Calculé au prochain démarrage</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sécurité -->
+            <div class="panel">
+                <h2 class="section-title">🔒 Sécurité</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">Taille maximale des vidéos</label>
+                    <div class="setting-description">
+                        Taille maximale des fichiers vidéo uploadés (en MB)
+                    </div>
+                    <select class="setting-input" id="maxFileSize">
+                        <option value="100">100 MB</option>
+                        <option value="250">250 MB</option>
+                        <option value="500" selected>500 MB</option>
+                        <option value="1000">1 GB</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">Activer le mode debug</label>
+                    <div class="setting-description">
+                        Afficher des informations de débogage dans la console
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="debugMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveSettings()">
+                💾 Enregistrer les paramètres
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Charger les paramètres sauvegardés
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('anomalySettings') || '{}');
+            
+            if (settings.confidenceThreshold) {
+                document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
+                document.getElementById('confidenceValue').textContent = settings.confidenceThreshold + '%';
+            }
+            if (settings.defaultFrameSkip) {
+                document.getElementById('defaultFrameSkip').value = settings.defaultFrameSkip;
+            }
+            if (settings.autoThermalMode !== undefined) {
+                document.getElementById('autoThermalMode').checked = settings.autoThermalMode;
+            }
+            if (settings.showBoundingBoxes !== undefined) {
+                document.getElementById('showBoundingBoxes').checked = settings.showBoundingBoxes;
+            }
+            if (settings.soundNotifications !== undefined) {
+                document.getElementById('soundNotifications').checked = settings.soundNotifications;
+            }
+            if (settings.videoQuality) {
+                document.getElementById('videoQuality').value = settings.videoQuality;
+            }
+            if (settings.saveThumbnails !== undefined) {
+                document.getElementById('saveThumbnails').checked = settings.saveThumbnails;
+            }
+            if (settings.retentionDays) {
+                document.getElementById('retentionDays').value = settings.retentionDays;
+            }
+            if (settings.maxFileSize) {
+                document.getElementById('maxFileSize').value = settings.maxFileSize;
+            }
+            if (settings.debugMode !== undefined) {
+                document.getElementById('debugMode').checked = settings.debugMode;
+            }
+        }
+
+        function saveSettings() {
+            const settings = {
+                confidenceThreshold: document.getElementById('confidenceThreshold').value,
+                defaultFrameSkip: document.getElementById('defaultFrameSkip').value,
+                autoThermalMode: document.getElementById('autoThermalMode').checked,
+                showBoundingBoxes: document.getElementById('showBoundingBoxes').checked,
+                soundNotifications: document.getElementById('soundNotifications').checked,
+                videoQuality: document.getElementById('videoQuality').value,
+                saveThumbnails: document.getElementById('saveThumbnails').checked,
+                retentionDays: document.getElementById('retentionDays').value,
+                maxFileSize: document.getElementById('maxFileSize').value,
+                debugMode: document.getElementById('debugMode').checked
+            };
+
+            localStorage.setItem('anomalySettings', JSON.stringify(settings));
+
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = '✅ Paramètres sauvegardés avec succès!';
+            alertBox.className = 'alert success show';
+
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // Charger au démarrage
+        loadSettings();
+    </script>
+</body>
+</html>

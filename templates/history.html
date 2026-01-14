@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique - Système de Détection d'Anomalies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #f8f9ff;
+            color: #667eea;
+        }
+
+        .nav-links a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 10px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .history-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .history-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .history-table tbody tr {
+            transition: background 0.3s ease;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-badge.safe {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.anomaly {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .close-btn {
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .anomaly-details {
+            display: grid;
+            gap: 15px;
+        }
+
+        .anomaly-card {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 968px) {
+            .history-table {
+                font-size: 0.85em;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 10px;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filter-input,
+            .filter-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📜 Historique des Analyses</h1>
+            <p>Consultez toutes vos analyses précédentes</p>
+        </header>
+
+        <!-- Navigation -->
+        <div class="navbar">
+            <div class="nav-links">
+                <a href="/">🏠 Accueil</a>
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/history" class="active">📜 Historique</a>
+                <a href="/settings">⚙️ Paramètres</a>
+                <a href="/about">ℹ️ À propos</a>
+            </div>
+        </div>
+
+        <!-- Panel principal -->
+        <div class="panel">
+            <h2 class="section-title">📋 Liste des analyses</h2>
+
+            <!-- Filtres -->
+            <div class="filters">
+                <input type="text" id="searchInput" class="filter-input" placeholder="🔍 Rechercher par nom de vidéo...">
+                <select id="filterStatus" class="filter-select">
+                    <option value="all">Tous les statuts</option>
+                    <option value="anomaly">Avec anomalies</option>
+                    <option value="safe">Sans anomalies</option>
+                </select>
+                <select id="sortBy" class="filter-select">
+                    <option value="recent">Plus récent</option>
+                    <option value="oldest">Plus ancien</option>
+                    <option value="most-anomalies">Plus d'anomalies</option>
+                </select>
+            </div>
+
+            <!-- Tableau -->
+            <div id="historyContainer">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal détails -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Détails de l'analyse</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let allReports = [];
+        let filteredReports = [];
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/reports');
+                allReports = await response.json();
+                filteredReports = [...allReports];
+                displayHistory();
+            } catch (error) {
+                console.error('Erreur chargement historique:', error);
+                document.getElementById('historyContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <h3>Erreur de chargement</h3>
+                        <p>Impossible de charger l'historique</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayHistory() {
+            const container = document.getElementById('historyContainer');
+
+            if (filteredReports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3>Aucune analyse trouvée</h3>
+                        <p>Commencez une analyse pour voir l'historique</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>📹 Vidéo</th>
+                            <th>📅 Date</th>
+                            <th>⏱️ Durée</th>
+                            <th>🚨 Anomalies</th>
+                            <th>📊 Statut</th>
+                            <th>⚙️ Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredReports.map(report => {
+                            const date = new Date(report.timestamp);
+                            const hasAnomalies = report.anomalies_count > 0;
+                            const duration = Math.floor(report.duration || 0);
+                            const minutes = Math.floor(duration / 60);
+                            const seconds = duration % 60;
+
+                            return `
+                                <tr>
+                                    <td><strong>${report.video}</strong></td>
+                                    <td>${date.toLocaleString('fr-FR')}</td>
+                                    <td>${minutes}:${seconds.toString().padStart(2, '0')}</td>
+                                    <td><strong>${report.anomalies_count}</strong></td>
+                                    <td>
+                                        <span class="status-badge ${hasAnomalies ? 'anomaly' : 'safe'}">
+                                            ${hasAnomalies ? '🚨 Anomalies' : '✅ Sécurisé'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-view" onclick='viewDetails(${JSON.stringify(report)})'>
+                                                👁️ Voir
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function viewDetails(report) {
+            const modal = document.getElementById('detailsModal');
+            const content = document.getElementById('modalContent');
+
+            const date = new Date(report.timestamp);
+            const duration = Math.floor(report.duration || 0);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+
+            let detailsHTML = `
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📹 ${report.video}</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 8px;">
+                            <strong>📅 Date:</strong> ${date.toLocaleString('fr-FR')}
+                        </div>
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 8px;">
+                            <strong>⏱️ Durée:</strong> ${minutes}:${seconds.toString().padStart(2, '0')}
+                        </div>
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 8px;">
+                            <strong>🎞️ Frames:</strong> ${report.total_frames}
+                        </div>
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 8px;">
+                            <strong>🚨 Anomalies:</strong> ${report.anomalies_count}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (report.anomalies && report.anomalies.length > 0) {
+                detailsHTML += `
+                    <h3 style="color: #ef4444; margin-bottom: 15px;">🚨 Anomalies détectées</h3>
+                    <div class="anomaly-details">
+                        ${report.anomalies.map(anomaly => `
+                            <div class="anomaly-card">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <strong style="color: #dc2626; font-size: 1.1em;">
+                                        ⚠️ ${anomaly.class}
+                                    </strong>
+                                    <span style="background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em;">
+                                        ${(anomaly.confidence * 100).toFixed(0)}%
+                                    </span>
+                                </div>
+                                <div style="color: #666; font-size: 0.9em;">
+                                    ⏱️ Temps: ${anomaly.time_str || anomaly.time} | 
+                                    🎞️ Frame: ${anomaly.frame}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                detailsHTML += `
+                    <div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 10px;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">✅</div>
+                        <h3 style="color: #065f46;">Aucune anomalie détectée</h3>
+                        <p style="color: #047857; margin-top: 10px;">Cette vidéo est sécurisée</p>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = detailsHTML;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        // Filtres
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        document.getElementById('sortBy').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // Filtrer
+            filteredReports = allReports.filter(report => {
+                const matchesSearch = report.video.toLowerCase().includes(searchTerm);
+                const hasAnomalies = report.anomalies_count > 0;
+                
+                let matchesStatus = true;
+                if (statusFilter === 'anomaly') matchesStatus = hasAnomalies;
+                if (statusFilter === 'safe') matchesStatus = !hasAnomalies;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            // Trier
+            filteredReports.sort((a, b) => {
+                if (sortBy === 'recent') {
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                } else if (sortBy === 'oldest') {
+                    return new Date(a.timestamp) - new Date(b.timestamp);
+                } else if (sortBy === 'most-anomalies') {
+                    return b.anomalies_count - a.anomalies_count;
+                }
+            });
+
+            displayHistory();
+        }
+
+        // Fermer modal au clic extérieur
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Charger l'historique au démarrage
+        loadHistory();
+
+        // Rafraîchir toutes les 30 secondes
+        setInterval(loadHistory, 30000);
+    </script>
+</body>
+</html>

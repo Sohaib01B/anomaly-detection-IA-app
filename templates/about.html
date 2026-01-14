@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À propos - Système de Détection d'Anomalies</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover { background: #f8f9ff; color: #667eea; }
+        .nav-links a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .hero h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .hero p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        .feature-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .feature-desc {
+            color: #666;
+            line-height: 1.5;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .tech-badge {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        .tech-badge:hover {
+            transform: scale(1.05);
+            background: #764ba2;
+        }
+        .info-box {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .info-box p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ℹ️ À propos</h1>
+            <p>Découvrez notre système de détection d'anomalies</p>
+        </header>
+
+        <div class="navbar">
+            <div class="nav-links">
+                <a href="/">🏠 Accueil</a>
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/history">📜 Historique</a>
+                <a href="/settings">⚙️ Paramètres</a>
+                <a href="/about" class="active">ℹ️ À propos</a>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero">
+            <h2>🎥 AnomalyDetect</h2>
+            <p>
+                Un système intelligent de détection d'anomalies en temps réel utilisant 
+                l'intelligence artificielle pour analyser des flux vidéo et identifier 
+                automatiquement les comportements suspects et les situations dangereuses.
+            </p>
+        </div>
+
+        <!-- Fonctionnalités principales -->
+        <div class="panel">
+            <h2 class="section-title">✨ Fonctionnalités principales</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Détection en temps réel</div>
+                    <div class="feature-desc">
+                        Analyse vidéo en direct avec détection instantanée des anomalies
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📹</div>
+                    <div class="feature-title">Support multi-sources</div>
+                    <div class="feature-desc">
+                        Compatible avec vidéos uploadées et flux webcam en direct
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">IA avancée</div>
+                    <div class="feature-desc">
+                        Modèle CNN entraîné sur 9 catégories d'anomalies différentes
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Dashboard analytique</div>
+                    <div class="feature-desc">
+                        Visualisation des statistiques et graphiques en temps réel
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Encadrement précis</div>
+                    <div class="feature-desc">
+                        Boîtes de délimitation autour des zones d'anomalies
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📜</div>
+                    <div class="feature-title">Historique complet</div>
+                    <div class="feature-desc">
+                        Sauvegarde et consultation de toutes les analyses
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stack technique -->
+        <div class="panel">
+            <h2 class="section-title">🛠️ Stack technique</h2>
+            <h3 style="margin: 20px 0; color: #333;">Backend</h3>
+            <div class="tech-stack">
+                <span class="tech-badge">🐍 Python 3.8+</span>
+                <span class="tech-badge">🌐 Flask</span>
+                <span class="tech-badge">🧠 TensorFlow/Keras</span>
+                <span class="tech-badge">📸 OpenCV</span>
+                <span class="tech-badge">🔢 NumPy</span>
+            </div>
+
+            <h3 style="margin: 20px 0; color: #333;">Frontend</h3>
+            <div class="tech-stack">
+                <span class="tech-badge">🎨 HTML5/CSS3</span>
+                <span class="tech-badge">⚡ JavaScript ES6+</span>
+                <span class="tech-badge">📊 Chart.js</span>
+                <span class="tech-badge">🎯 Responsive Design</span>
+            </div>
+        </div>
+
+        <!-- Modèle IA -->
+        <div class="panel">
+            <h2 class="section-title">🧠 Modèle d'IA</h2>
+            
+            <div class="info-box">
+                <h3>Architecture du modèle</h3>
+                <p>
+                    Notre système utilise un réseau de neurones convolutionnel (CNN) 
+                    entraîné sur des milliers d'images pour détecter 9 types d'anomalies 
+                    différents avec une précision élevée.
+                </p>
+            </div>
+
+            <h3 style="margin: 25px 0 15px 0; color: #333;">Classes détectées</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: #fee2e2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                    <strong>🚨 Abuse</strong> - Abus/violence
+                </div>
+                <div style="background: #ffedd5; padding: 15px; border-radius: 8px; border-left: 4px solid #f97316;">
+                    <strong>⚔️ Assault</strong> - Agression
+                </div>
+                <div style="background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <strong>🏚️ Burglary</strong> - Cambriolage
+                </div>
+                <div style="background: #fecaca; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                    <strong>💥 Explosion</strong> - Explosion
+                </div>
+                <div style="background: #fae8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #a855f7;">
+                    <strong>🥊 Fighting</strong> - Bagarre
+                </div>
+                <div style="background: #e0e7ff; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1;">
+                    <strong>🔫 Shooting</strong> - Tir d'arme
+                </div>
+                <div style="background: #cffafe; padding: 15px; border-radius: 8px; border-left: 4px solid #06b6d4;">
+                    <strong>🛒 Shoplifting</strong> - Vol à l'étalage
+                </div>
+                <div style="background: #fed7aa; padding: 15px; border-radius: 8px; border-left: 4px solid #fb923c;">
+                    <strong>💰 Stealing</strong> - Vol
+                </div>
+                <div style="background: #d1fae5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <strong>✅ Normal</strong> - Situation normale
+                </div>
+            </div>
+
+            <div class="stats-row" style="margin-top: 30px;">
+                <div class="stat-item">
+                    <div class="stat-value">128×128</div>
+                    <div class="stat-label">Résolution d'entrée</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">9</div>
+                    <div class="stat-label">Classes détectées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">>60%</div>
+                    <div class="stat-label">Seuil de confiance</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cas d'usage -->
+        <div class="panel">
+            <h2 class="section-title">🎯 Cas d'usage</h2>
+            
+            <div class="info-box">
+                <h3>🏢 Surveillance d'entreprise</h3>
+                <p>
+                    Sécurisez vos locaux avec une détection automatique des intrusions, 
+                    vols et comportements suspects.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h3>🏠 Sécurité résidentielle</h3>
+                <p>
+                    Protégez votre domicile avec un système de surveillance intelligent 
+                    qui alerte en cas d'activité anormale.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h3>🏪 Commerce de détail</h3>
+                <p>
+                    Prévenez le vol à l'étalage et surveillez les zones sensibles de 
+                    votre magasin en temps réel.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h3>🎓 Établissements scolaires</h3>
+                <p>
+                    Détectez rapidement les situations potentiellement dangereuses comme 
+                    les bagarres ou comportements violents.
+                </p>
+            </div>
+        </div>
+
+        <!-- Informations système -->
+        <div class="panel">
+            <h2 class="section-title">📋 Informations système</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="info-box">
+                    <h3>Version</h3>
+                    <p><strong>v2.0.0</strong> - Janvier 2026</p>
+                </div>
+                <div class="info-box">
+                    <h3>License</h3>
+                    <p>MIT License - Open Source</p>
+                </div>
+                <div class="info-box">
+                    <h3>Framework ML</h3>
+                    <p>TensorFlow 2.x + Keras</p>
+                </div>
+                <div class="info-box">
+                    <h3>Format du modèle</h3>
+                    <p>HDF5 (.h5) / SavedModel</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support & Contact -->
+        <div class="panel" style="text-align: center; padding: 40px;">
+            <h2 style="font-size: 2em; margin-bottom: 20px;">💬 Besoin d'aide ?</h2>
+            <p style="color: #666; font-size: 1.1em; margin-bottom: 30px;">
+                Consultez la documentation ou contactez-nous pour plus d'informations
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="https://github.com" target="_blank" style="background: #333; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    📖 Documentation
+                </a>
+                <a href="https://github.com" target="_blank" style="background: #667eea; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    💻 GitHub
+                </a>
+                <a href="mailto:support@anomalydetect.com" style="background: #10b981; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    ✉️ Contact
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
