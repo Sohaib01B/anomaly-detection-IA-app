@@ -22,7 +22,7 @@ Application web Flask utilisant un modèle de Deep Learning (Autoencoder 3D CNN)
 ## 🎯 Aperçu
 
 Ce projet détecte automatiquement des comportements anormaux dans des vidéos de surveillance (zones publiques, parkings, etc.) en utilisant:
-- **Modèle**: Autoencoder 3D Convolutionnel
+- **Modèle**: Autoencoder 3D Convolutionnel (CNN + LSTM)
 - **Datasets d'entraînement**: UCSD Pedestrian (Ped1 & Ped2) + CUHK Avenue
 - **Framework**: TensorFlow/Keras + Flask
 - **Interface**: Web responsive avec drag & drop
@@ -50,5 +50,6 @@ Ce projet détecte automatiquement des comportements anormaux dans des vidéos d
 - Détection d'anomalies majeures: ✅ Bon
 - Faux positifs: Modéré
 - Temps d'inférence: ~2-5 min pour 200 frames
+
 
 
